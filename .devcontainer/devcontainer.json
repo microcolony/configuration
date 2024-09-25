@@ -2,7 +2,11 @@
 // README at: https://github.com/marcosgomesneto/bun-devcontainers/tree/main/src/basic-bun
 {
 	"name": "microcolony.configuration",
-	"dockerFile": "Dockerfile",
+
+    "dockerComposeFile": "compose.yaml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
 	// Configure tool-specific properties.
 	"customizations": {
 	  // Configure properties specific to VS Code.
