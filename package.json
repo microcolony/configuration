@@ -1,0 +1,22 @@
+{
+  "name": "configuration",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts"
+  },
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "hono": "^4.6.3",
+    "json5": "2.2.3",
+    "smol-toml": "1.3.0",
+    "yaml": "2.5.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "author": {
+    "email": "microcolony.patience470@passmail.com",
+    "name": "Christian South",
+    "url": "https://capedcoder.io"
+  },
+  "license": "Apache-2.0"
+}
