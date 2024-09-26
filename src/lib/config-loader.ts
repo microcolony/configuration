@@ -10,6 +10,8 @@ type ConfigStore = {
 };
 type ParserFunction = (input: string) => KeyValueStore;
 
+const isObject = (value: unknown) => typeof value === "object" && value !== null;
+
 const parserMap: { [key: string]: ParserFunction } = {
   "json": parseJson,
   "env": (input: string) => parseEnv(Buffer.from(input)),
@@ -58,13 +60,8 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
     if (config['_extends']) {
       const baseConfig = parent[config['_extends'] as string];
-      if (!baseConfig) {
-        console.warn(`Base config not found: ${config['_extends']}`);
-        return config;
-      }
-
-      if (typeof baseConfig !== "object") {
-        console.warn(`Invalid base config: ${config['_extends']}`);
+      if (!isObject(baseConfig)) {
+        console.warn(`Extending invalid config: ${config['_extends']}`);
         return config;
       }
 
@@ -74,7 +71,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
     }
 
     for (const key in config) {
-      if (typeof config[key] === "object") {
+      if (isObject(config[key])) {
         config[key] = parseConfig(config[key] as KeyValueStore, parent);
       }
 
@@ -83,7 +80,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
         const referencePath = config[key].slice(2).split(".");
 
         for (const referencedKey of referencePath) {
-          if (typeof currentValue !== "object" || currentValue[referencedKey] === undefined) {
+          if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
             console.warn(`Invalid reference: ${config[key]}`);
             currentValue = "";
             break;
@@ -91,9 +88,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
           currentValue = currentValue[referencedKey];
         }
 
-        if (currentValue !== null) {
-          config[key] = currentValue;
-        }
+        config[key] = currentValue;
       }
     }
 
