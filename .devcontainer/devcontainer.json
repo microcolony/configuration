@@ -1,63 +1,69 @@
 {
-	"name": "microcolony.configuration",
-	// See complete list https://hub.docker.com/r/oven/bun
-	"image": "oven/bun",
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [8475],
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "bun",
-	// Add more features. See complete list https://github.com/devcontainers/features
-	"features": {
-	  "ghcr.io/devcontainers/features/common-utils:2": {
-		"configureZshAsDefaultShell": true
-	  }
-	},
-	"containerEnv": {},
-	"remoteEnv": {},
-	// Configure tool-specific properties.
-	"customizations": {
-	  // Configure properties specific to VS Code.
-	  "vscode": {
-		// Add the IDs of extensions you want installed when the container is created.
-		"extensions": [
-		  // JavaScript
-		  "oven.bun-vscode",
-		  // TypeScript
-		  "bierner.lit-html",
-		  "better-ts-errors.better-ts-errors",
-		  // Makefile
-		  "ms-vscode.makefile-tools",
-		  // Markdown
-		  "bierner.markdown-preview-github-styles",
-		  "bierner.markdown-emoji",
-		  "bierner.markdown-checkbox",
-		  "bierner.jsdoc-markdown-highlighting",
-		  "ms-vscode.wordcount",
-		  // Other
-		  "albert.tabout",
-		  "streetsidesoftware.code-spell-checker",
-		  "bierner.comment-tagged-templates",
-		  "humao.rest-client",
-		  "editorconfig.editorconfig",
-		  "redhat.vscode-yaml",
-		  "tamasfe.even-better-toml"
-		],
-		// Set *default* container specific settings.json values on container create.
-		"settings": {
-		  "terminal.integrated.defaultProfile.linux": "zsh",
-		  "debug.internalConsoleOptions": "neverOpen",
-		  "editor.formatOnPaste": true,
-		  "editor.guides.bracketPairs": "active",
-		  "scm.defaultViewMode": "tree",
-		  "diffEditor.diffAlgorithm": "advanced",
-		  "diffEditor.experimental.showMoves": true,
-		  "diffEditor.renderSideBySide": false,
-		  "files.watcherExclude": {
-			"**/node_modules/**": true
-		  },
-		  // Prettifies the response with emojis and such.
-		  "betterTypeScriptErrors.prettify": true
-		}
-	  }
-	}
+  "name": "microcolony.configuration",
+  // See complete list https://hub.docker.com/r/oven/bun
+  "image": "oven/bun",
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    8475
+  ],
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  "remoteUser": "bun",
+  // Add more features. See complete list https://github.com/devcontainers/features
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "containerEnv": {},
+  "remoteEnv": {},
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        // JavaScript
+        "oven.bun-vscode",
+        // TypeScript
+        "bierner.lit-html",
+        "better-ts-errors.better-ts-errors",
+        // Makefile
+        "ms-vscode.makefile-tools",
+        // Markdown
+        "bierner.markdown-preview-github-styles",
+        "bierner.markdown-emoji",
+        "bierner.markdown-checkbox",
+        "bierner.jsdoc-markdown-highlighting",
+        "ms-vscode.wordcount",
+        // Other
+        "albert.tabout",
+        "streetsidesoftware.code-spell-checker",
+        "bierner.comment-tagged-templates",
+        "humao.rest-client",
+        "editorconfig.editorconfig",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "eslint.vscode-eslint"
+      ],
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "debug.internalConsoleOptions": "neverOpen",
+        "editor.formatOnPaste": true,
+        "editor.guides.bracketPairs": "active",
+        "scm.defaultViewMode": "tree",
+        "diffEditor.diffAlgorithm": "advanced",
+        "diffEditor.experimental.showMoves": true,
+        "diffEditor.renderSideBySide": false,
+        "files.watcherExclude": {
+          "**/node_modules/**": true
+        },
+        // Prettifies the response with emojis and such.
+        "betterTypeScriptErrors.prettify": true
+      }
+    }
   }
+}

@@ -10,7 +10,7 @@ type ConfigStore = {
 };
 type ParserFunction = (input: string) => KeyValueStore;
 
-const parserMap: {[key: string]: ParserFunction} = {
+const parserMap: { [key: string]: ParserFunction } = {
   "json": parseJson,
   "env": (input: string) => parseEnv(Buffer.from(input)),
   "toml": parseToml as ParserFunction,
@@ -20,42 +20,57 @@ const parserMap: {[key: string]: ParserFunction} = {
 const configLoader = async (configPath: string): Promise<ConfigStore> => {
   console.info(`Loading config files from: ${configPath}`);
 
-  /* Read all files in the config path */
-  const files = await readdir(configPath);
+  let files: string[];
+  try {
+    files = await readdir(configPath);
+  } catch (error: unknown) {
+    console.error(`Failed to read directory: ${error}`);
+    return {};
+  }
 
-  /* Load all the files */
   const configStore: ConfigStore = {};
   for (const file of files) {
-    const fileParts   = file.split(".");
-    let fileExtension = fileParts[fileParts.length - 1].toLowerCase();
+    const fileParts = file.split(".");
+    let fileExtension = (fileParts[fileParts.length - 1] || "").toLowerCase();
 
-    /** No extension === env file */
     if (fileParts.length < 2) fileExtension = "env";
 
-    if (undefined === parserMap[fileExtension]) {
+    const parser = parserMap[fileExtension];
+    if (!parser) {
       console.warn(`Skipping file (unknown file extension): ${file}`);
       continue;
     }
 
-    let fileData: string = await readFile(`${configPath}/${file}`, "utf-8");
-    configStore[fileParts[0].toLowerCase()] = parserMap[fileExtension](fileData);
+    let fileData: string;
+    try {
+      fileData = await readFile(`${configPath}/${file}`, "utf-8");
+      configStore[(fileParts[0] || "").toLowerCase()] = parser(fileData);
+    } catch (error: unknown) {
+      console.error(`Failed to read and parse file ${file}: ${error}`);
+      continue;
+    }
   }
 
-  /** Now all the files are pre-loaded, we can process them */
   console.info(`Loaded ${Object.keys(configStore).length} config files`);
 
   const parseConfig = (config: KeyValueStore, parent: KeyValueStore | null = null): KeyValueStore => {
-    if (null === parent) parent = config;
+    if (!parent) parent = config;
 
-    if (undefined !== config._extends) {
-      const baseConfig = parent[config._extends as string];
-      if (undefined === baseConfig) {
-        console.warn(`Base config not found: ${config._extends}`);
+    if (config['_extends']) {
+      const baseConfig = parent[config['_extends'] as string];
+      if (!baseConfig) {
+        console.warn(`Base config not found: ${config['_extends']}`);
         return config;
       }
 
-      delete config._extends;
-      config = Object.assign({}, baseConfig, config);
+      if (typeof baseConfig !== "object") {
+        console.warn(`Invalid base config: ${config['_extends']}`);
+        return config;
+      }
+
+      delete config['_extends'];
+
+      config = { ...baseConfig, ...config };
     }
 
     for (const key in config) {
@@ -65,30 +80,31 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
       if (typeof config[key] === "string" && config[key].startsWith("$")) {
         let currentValue: KeyValueStore | string = parent;
+        const referencePath = config[key].slice(2).split(".");
 
-        config[key].replace("$.", "")
-          .split(".")
-          .forEach((referencedKey: string) => {
-            if (typeof currentValue !== "object") {
-              console.warn(`Invalid reference: ${config[key]}`);
-              return;
-            }
+        for (const referencedKey of referencePath) {
+          if (typeof currentValue !== "object" || currentValue[referencedKey] === undefined) {
+            console.warn(`Invalid reference: ${config[key]}`);
+            currentValue = "";
+            break;
+          }
+          currentValue = currentValue[referencedKey];
+        }
 
-            currentValue = currentValue[referencedKey];
-          });
-
-        config[key] = currentValue;
+        if (currentValue !== null) {
+          config[key] = currentValue;
+        }
       }
     }
 
     return config;
-  }
+  };
 
   for (const key in configStore) {
-    configStore[key] = parseConfig(configStore[key]);
+    configStore[key] = parseConfig(configStore[key] as KeyValueStore);
   }
 
   return configStore;
-}
+};
 
 export default configLoader;
