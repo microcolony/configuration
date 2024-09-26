@@ -9,9 +9,13 @@ test("configLoader should load all the files in the config path", async () => {
       "name": "base",
       "someKey": "someValue"
     },
+    "reference": {
+      "key": "value"
+    },
     "production": {
       "name": "production",
-      "someKey": "someValue"
+      "someKey": "someValue",
+      "reference": "value" // This is a reference in the file
     },
     "development": {
       "_extends": "unknown", // The config file references unknown parent

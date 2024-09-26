@@ -4,7 +4,7 @@ import { parse as parseToml } from 'smol-toml';
 import { parse as parseEnv } from 'dotenv';
 import { parse as parseYaml } from 'yaml';
 
-type KeyValueStore = { [key: string]: unknown };
+type KeyValueStore = { [key: string]: KeyValueStore | string };
 type ConfigStore = {
   [key: string]: KeyValueStore;
 };
@@ -55,12 +55,29 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
       }
 
       delete config._extends;
-      return Object.assign({}, baseConfig, config);
+      config = Object.assign({}, baseConfig, config);
     }
 
     for (const key in config) {
       if (typeof config[key] === "object") {
         config[key] = parseConfig(config[key] as KeyValueStore, parent);
+      }
+
+      if (typeof config[key] === "string" && config[key].startsWith("$")) {
+        let currentValue: KeyValueStore | string = parent;
+
+        config[key].replace("$.", "")
+          .split(".")
+          .forEach((referencedKey: string) => {
+            if (typeof currentValue !== "object") {
+              console.warn(`Invalid reference: ${config[key]}`);
+              return;
+            }
+
+            currentValue = currentValue[referencedKey];
+          });
+
+        config[key] = currentValue;
       }
     }
 

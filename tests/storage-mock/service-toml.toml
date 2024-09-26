@@ -2,9 +2,13 @@
 name = "base"
 someKey = "someValue"
 
+[reference]
+key = "value"
+
 [production]
 _extends = "base"
 name = "production"
+reference = "$.reference.key"
 
 [development]
 _extends = "unknown"
