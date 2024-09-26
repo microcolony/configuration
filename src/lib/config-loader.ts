@@ -4,7 +4,7 @@ import { parse as parseToml } from 'smol-toml';
 import { parse as parseEnv } from 'dotenv';
 import { parse as parseYaml } from 'yaml';
 
-type KeyValueStore = { [key: string]: string };
+type KeyValueStore = { [key: string]: unknown };
 type ConfigStore = {
   [key: string]: KeyValueStore;
 };
@@ -39,6 +39,36 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
     let fileData: string = await readFile(`${configPath}/${file}`, "utf-8");
     configStore[fileParts[0].toLowerCase()] = parserMap[fileExtension](fileData);
+  }
+
+  /** Now all the files are pre-loaded, we can process them */
+  console.info(`Loaded ${Object.keys(configStore).length} config files`);
+
+  const parseConfig = (config: KeyValueStore, parent: KeyValueStore | null = null): KeyValueStore => {
+    if (null === parent) parent = config;
+
+    if (undefined !== config._extends) {
+      const baseConfig = parent[config._extends as string];
+      if (undefined === baseConfig) {
+        console.warn(`Base config not found: ${config._extends}`);
+        return config;
+      }
+
+      delete config._extends;
+      return Object.assign({}, baseConfig, config);
+    }
+
+    for (const key in config) {
+      if (typeof config[key] === "object") {
+        config[key] = parseConfig(config[key] as KeyValueStore, parent);
+      }
+    }
+
+    return config;
+  }
+
+  for (const key in configStore) {
+    configStore[key] = parseConfig(configStore[key]);
   }
 
   return configStore;

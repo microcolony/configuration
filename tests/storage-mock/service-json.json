@@ -1,3 +1,14 @@
 {
-  "name": "service-json"
+  "base": {
+    "name": "base",
+    "someKey": "someValue"
+  },
+  "production": {
+    "_extends": "base",
+    "name": "production"
+  },
+  "development": {
+    "_extends": "unknown",
+    "name": "development"
+  }
 }
