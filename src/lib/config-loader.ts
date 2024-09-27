@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { parse as parseJson } from 'json5';
 import { parse as parseToml } from 'smol-toml';
 import { parse as parseEnv } from 'dotenv';
