@@ -94,21 +94,8 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
   const processValue = (value: string, currentKeyName: string, parent: KeyValueStore) => {
     if (!value.startsWith("~")) return value;
 
-    if (value.startsWith("~ref~")) {
-      const referencePath = value.replace('~ref~', '').trim().split(".");
-      referencePath[0] ||= currentKeyName;
-      let currentValue: KeyValueStore | string = parent;
-
-      for (const referencedKey of referencePath) {
-        if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
-          console.warn(`Invalid reference: ${value}`);
-          currentValue = "";
-          break;
-        }
-        currentValue = currentValue[referencedKey];
-      }
-
-      return currentValue;
+    for (const plugin of plugins) {
+      value = plugin(value, currentKeyName, parent) as string;
     }
 
     return value;
@@ -136,5 +123,27 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
   return configStore;
 };
+
+type Plugin = (value: string, currentKeyName: string, parent: KeyValueStore) => string | KeyValueStore;
+const plugins: Plugin[] = [
+  (value: string, currentKeyName: string, parent: KeyValueStore): string | KeyValueStore => {
+    if (!value.startsWith("~ref~")) return value;
+
+    const referencePath = value.replace('~ref~', '').trim().split(".");
+    referencePath[0] ||= currentKeyName;
+    let currentValue: KeyValueStore | string = parent;
+
+    for (const referencedKey of referencePath) {
+      if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
+        console.warn(`Invalid reference: ${value}`);
+        currentValue = "";
+        break;
+      }
+      currentValue = currentValue[referencedKey];
+    }
+
+    return currentValue;
+  }
+]
 
 export default configLoader;
