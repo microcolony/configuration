@@ -10,8 +10,7 @@ type ConfigStore = {
 };
 type ParserFunction = (input: string) => KeyValueStore;
 
-export const isObject = (value: unknown) =>
-  typeof value === "object" && value !== null;
+export const isObject = (value: unknown) => typeof value === "object" && value !== null;
 
 const parserMap: { [key: string]: ParserFunction } = {
   json: parseJson,
@@ -56,11 +55,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
   console.info(`Loaded ${Object.keys(configStore).length} config files`);
 
-  const extendConfig = (
-    config: KeyValueStore,
-    currentKeyName: string,
-    parent: KeyValueStore,
-  ) => {
+  const extendConfig = (config: KeyValueStore, currentKeyName: string, parent: KeyValueStore) => {
     if (!config["~extends~"]) return config;
 
     if (typeof config["~extends~"] !== "string") {
@@ -96,11 +91,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
     return config;
   };
 
-  const processValue = (
-    value: string,
-    currentKeyName: string,
-    parent: KeyValueStore,
-  ) => {
+  const processValue = (value: string, currentKeyName: string, parent: KeyValueStore) => {
     if (!value.startsWith("~")) return value;
 
     for (const plugin of plugins) {
@@ -131,11 +122,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
   };
 
   for (const key in configStore) {
-    configStore[key] = parseConfig(
-      configStore[key] as KeyValueStore,
-      key,
-      configStore,
-    );
+    configStore[key] = parseConfig(configStore[key] as KeyValueStore, key, configStore);
   }
 
   return configStore;
@@ -147,11 +134,7 @@ type Plugin = (
   parent: KeyValueStore,
 ) => string | KeyValueStore;
 const plugins: Plugin[] = [
-  (
-    value: string,
-    currentKeyName: string,
-    parent: KeyValueStore,
-  ): string | KeyValueStore => {
+  (value: string, currentKeyName: string, parent: KeyValueStore): string | KeyValueStore => {
     if (!value.startsWith("~ref~")) return value;
 
     const referencePath = value.replace("~ref~", "").trim().split(".");
@@ -159,10 +142,7 @@ const plugins: Plugin[] = [
     let currentValue: KeyValueStore | string = parent;
 
     for (const referencedKey of referencePath) {
-      if (
-        !isObject(currentValue) ||
-        currentValue[referencedKey] === undefined
-      ) {
+      if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
         console.warn(`Invalid reference: ${value}`);
         currentValue = "";
         break;

@@ -3,9 +3,7 @@
   // See complete list https://hub.docker.com/r/oven/bun
   "image": "oven/bun",
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [
-    8475
-  ],
+  "forwardPorts": [8475],
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "bun",
   // Add more features. See complete list https://github.com/devcontainers/features
