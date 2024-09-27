@@ -1,8 +1,8 @@
 import { Hono } from "hono/tiny";
-import { controller } from "./endpoints/v1.configuration.js";
+import Controller from "./endpoints/index.js";
 
 const app = new Hono({ strict: false });
-app.route("/", controller);
+app.route("/", Controller);
 
 export default {
   port: 8475,

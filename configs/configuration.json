@@ -1,0 +1,10 @@
+{
+  "base": {
+    "name": "configuration",
+    "log_level": "info"
+  },
+  "production": {
+    "log_level": "error",
+    "test": "test"
+  }
+}
