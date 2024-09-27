@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import configLoader from "../../../../src/lib/config-loader";
+import configLoader from "../../../../src/lib/config-loader.js";
 
 test("configLoader should load all the files in the config path", async () => {
   const configPath = "./tests/storage-mock";
@@ -18,7 +18,7 @@ test("configLoader should load all the files in the config path", async () => {
       "reference": "value" // This is a reference in the file
     },
     "development": {
-      "_extends": "unknown", // The config file references unknown parent
+      "~extends~": "unknown", // The config file references unknown parent
       "name": "development"
     }
   };

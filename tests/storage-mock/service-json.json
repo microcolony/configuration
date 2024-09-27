@@ -7,12 +7,12 @@
     "key": "value"
   },
   "production": {
-    "_extends": "base",
+    "~extends~": ".base",
     "name": "production",
-    "reference": "$.reference.key"
+    "reference": "~ref~ .reference.key"
   },
   "development": {
-    "_extends": "unknown",
+    "~extends~": "unknown",
     "name": "development"
   }
 }

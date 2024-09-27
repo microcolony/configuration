@@ -55,29 +55,44 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
   console.info(`Loaded ${Object.keys(configStore).length} config files`);
 
-  const parseConfig = (config: KeyValueStore, parent: KeyValueStore | null = null): KeyValueStore => {
-    if (!parent) parent = config;
-
-    if (config['_extends']) {
-      const baseConfig = parent[config['_extends'] as string];
-      if (!isObject(baseConfig)) {
-        console.warn(`Extending invalid config: ${config['_extends']}`);
+  const parseConfig = (config: KeyValueStore, currentKeyName: string, parent: KeyValueStore): KeyValueStore => {
+    if (config['~extends~']) {
+      if (typeof config['~extends~'] !== "string") {
+        console.warn(`Invalid ~extends~ value: ${config['~extends~']}`);
         return config;
       }
 
-      delete config['_extends'];
+      const extendPath = config['~extends~'].split(".");
+      extendPath[0] ||= currentKeyName;
+      let currentExtend = parent;
+      for (const key of extendPath) {
+        if (!isObject(currentExtend) || currentExtend[key] === undefined) {
+          console.warn(`Invalid ~extends~ path: ${config['~extends~']}`);
+          return config;
+        }
 
-      config = { ...baseConfig, ...config };
+        currentExtend = currentExtend[key] as KeyValueStore;
+      }
+
+      if (!isObject(currentExtend)) {
+        console.warn(`Extending invalid config: ${config['~extends~']}`);
+        return config;
+      }
+
+      delete config['~extends~'];
+
+      config = { ...currentExtend, ...config };
     }
 
     for (const key in config) {
       if (isObject(config[key])) {
-        config[key] = parseConfig(config[key] as KeyValueStore, parent);
+        config[key] = parseConfig(config[key] as KeyValueStore, currentKeyName, parent);
       }
 
-      if (typeof config[key] === "string" && config[key].startsWith("$")) {
+      if (typeof config[key] === "string" && config[key].startsWith("~ref~")) {
+        const referencePath = config[key].replace('~ref~', '').trim().split(".");
+        if (referencePath[0] === "")  referencePath[0] = currentKeyName;
         let currentValue: KeyValueStore | string = parent;
-        const referencePath = config[key].slice(2).split(".");
 
         for (const referencedKey of referencePath) {
           if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
@@ -96,7 +111,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
   };
 
   for (const key in configStore) {
-    configStore[key] = parseConfig(configStore[key] as KeyValueStore);
+    configStore[key] = parseConfig(configStore[key] as KeyValueStore, key, configStore);
   }
 
   return configStore;
