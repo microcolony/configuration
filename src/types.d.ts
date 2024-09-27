@@ -1,12 +1,10 @@
-type KeyValueStore = { [key: string]: KeyValueStore | string };
-type ConfigStore = {
-  [key: string]: KeyValueStore;
-};
-type ListenerFunction = (newConfig: ConfigStore) => void;
-type ParserFunction = (input: string) => KeyValueStore;
+type str = string;
+type obj = object;
+type num = number;
+type bool = boolean;
 
-type ParserPlugin = (
-  value: string,
-  currentKeyName: string,
-  parent: KeyValueStore,
-) => string | KeyValueStore;
+type ConfigStore = { [key: str]: null | obj | str | numb | bool };
+type ListenerFunction = (newConfig: ConfigStore) => void;
+type ParserFunction = (input: str) => ConfigStore;
+
+type InternalPlugin = (value: str, currentKeyName: str, parent: ConfigStore) => str | ConfigStore;

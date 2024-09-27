@@ -12,12 +12,12 @@ controller.get("/:sections{.*}?", (c: Context) => {
   const sectionParts = (c.req.param("sections") || "").split("/");
   if (sectionParts[0] === "") return c.json(localConfig);
 
-  let currentSection: KeyValueStore = localConfig;
+  let currentSection: ConfigStore = localConfig;
 
   for (const section of sectionParts) {
     if (!currentSection[section]) return c.json({ error: "Not found" }, 404);
     if (!isObject(currentSection[section])) return c.json({ [section]: currentSection[section] });
-    currentSection = currentSection[section] as KeyValueStore;
+    currentSection = currentSection[section] as ConfigStore;
   }
 
   return c.json(currentSection);

@@ -6,18 +6,18 @@ import logger from "./logger.js";
 import { isObject } from "./helpers.js";
 import { applyPlugins } from "./config-plugins.js";
 
-export const parserMap: { [key: string]: ParserFunction } = {
+export const parserMap: { [key: str]: ParserFunction } = {
   json: parseJson,
-  env: (input: string) => parseEnv(Buffer.from(input)),
+  env: (input: str) => parseEnv(Buffer.from(input)),
   toml: parseToml as ParserFunction,
   yaml: parseYaml,
 };
 
 export const parseConfig = (
-  config: KeyValueStore,
-  currentKey: string,
-  parent: KeyValueStore,
-): KeyValueStore => {
+  config: ConfigStore,
+  currentKey: str,
+  parent: ConfigStore,
+): ConfigStore => {
   config = extendConfig(config, currentKey, parent);
 
   for (const key in config) {
@@ -33,7 +33,7 @@ export const parseConfig = (
   return config;
 };
 
-export const extendConfig = (config: KeyValueStore, currentKey: string, parent: KeyValueStore) => {
+export const extendConfig = (config: ConfigStore, currentKey: str, parent: ConfigStore) => {
   if (!config["~extends~"]) return config;
 
   if (typeof config["~extends~"] !== "string") {
@@ -50,7 +50,7 @@ export const extendConfig = (config: KeyValueStore, currentKey: string, parent: 
       return config;
     }
 
-    currentExtend = currentExtend[key] as KeyValueStore;
+    currentExtend = currentExtend[key] as ConfigStore;
   }
 
   if (!isObject(currentExtend)) {
@@ -69,10 +69,25 @@ export const extendConfig = (config: KeyValueStore, currentKey: string, parent: 
   return config;
 };
 
-export const processValue = (value: string, currentKey: string, parent: KeyValueStore) => {
+/**
+ * Apply plugins to a value
+ *
+ * Note: When and external plugin system is developed, the currentKey and parent should not be sent
+ * to them. They are only for internal plugins. External plugins should receive only the value
+ *
+ * @param value
+ * @param currentKey This is used by internal plugins to get a base when not specified in references
+ * @param parent This is used by internal plugins to apply references
+ * @returns
+ */
+export const processValue = (
+  value: str,
+  currentKey: str,
+  parent: ConfigStore,
+): str | ConfigStore => {
   if (!value.startsWith("~")) return value;
 
-  value = applyPlugins(value, currentKey, parent) as string;
+  value = applyPlugins(value, currentKey, parent) as str;
 
   return value;
 };

@@ -1,12 +1,11 @@
 import { readdir, readFile } from "fs/promises";
-import { parserMap } from "./config-parser.js";
+import { parserMap, parseConfig } from "./config-parser.js";
 import logger from "./logger.js";
-import { parseConfig } from "./config-parser.js";
 
-const configLoader = async (configPath: string): Promise<ConfigStore> => {
+const configLoader = async (configPath: str): Promise<ConfigStore> => {
   logger.info(`Loading config files from: ${configPath}`);
 
-  let files: string[];
+  let files: str[];
   try {
     files = await readdir(configPath);
   } catch (error: unknown) {
@@ -27,7 +26,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
       continue;
     }
 
-    let fileData: string;
+    let fileData: str;
     try {
       fileData = await readFile(`${configPath}/${file}`, "utf-8");
       configStore[(fileParts[0] || "").toLowerCase()] = parser(fileData);
@@ -40,7 +39,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
   logger.info(`Loaded ${Object.keys(configStore).length} config files`);
 
   for (const key in configStore) {
-    configStore[key] = parseConfig(configStore[key] as KeyValueStore, key, configStore);
+    configStore[key] = parseConfig(configStore[key] as ConfigStore, key, configStore);
   }
 
   return configStore;
