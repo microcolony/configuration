@@ -4,13 +4,13 @@ import { parse as parseToml } from 'smol-toml';
 import { parse as parseEnv } from 'dotenv';
 import { parse as parseYaml } from 'yaml';
 
-type KeyValueStore = { [key: string]: KeyValueStore | string };
+export type KeyValueStore = { [key: string]: KeyValueStore | string };
 type ConfigStore = {
   [key: string]: KeyValueStore;
 };
 type ParserFunction = (input: string) => KeyValueStore;
 
-const isObject = (value: unknown) => typeof value === "object" && value !== null;
+export const isObject = (value: unknown) => typeof value === "object" && value !== null;
 
 const parserMap: { [key: string]: ParserFunction } = {
   "json": parseJson,
