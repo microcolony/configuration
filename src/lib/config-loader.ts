@@ -55,55 +55,71 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
   console.info(`Loaded ${Object.keys(configStore).length} config files`);
 
-  const parseConfig = (config: KeyValueStore, currentKeyName: string, parent: KeyValueStore): KeyValueStore => {
-    if (config['~extends~']) {
-      if (typeof config['~extends~'] !== "string") {
-        console.warn(`Invalid ~extends~ value: ${config['~extends~']}`);
-        return config;
-      }
+  const extendConfig = (config: KeyValueStore, currentKeyName: string, parent: KeyValueStore) => {
+    if (!config['~extends~']) return config;
 
-      const extendPath = config['~extends~'].split(".");
-      extendPath[0] ||= currentKeyName;
-      let currentExtend = parent;
-      for (const key of extendPath) {
-        if (!isObject(currentExtend) || currentExtend[key] === undefined) {
-          console.warn(`Invalid ~extends~ path: ${config['~extends~']}`);
-          return config;
-        }
-
-        currentExtend = currentExtend[key] as KeyValueStore;
-      }
-
-      if (!isObject(currentExtend)) {
-        console.warn(`Extending invalid config: ${config['~extends~']}`);
-        return config;
-      }
-
-      delete config['~extends~'];
-
-      config = { ...currentExtend, ...config };
+    if (typeof config['~extends~'] !== "string") {
+      console.warn(`Invalid ~extends~ value: ${config['~extends~']}`);
+      return config;
     }
+
+    const extendPath = config['~extends~'].split(".");
+    extendPath[0] ||= currentKeyName;
+    let currentExtend = parent;
+    for (const key of extendPath) {
+      if (!isObject(currentExtend) || currentExtend[key] === undefined) {
+        console.warn(`Invalid ~extends~ path: ${config['~extends~']}`);
+        return config;
+      }
+
+      currentExtend = currentExtend[key] as KeyValueStore;
+    }
+
+    if (!isObject(currentExtend)) {
+      console.warn(`Extending invalid config: ${config['~extends~']}`);
+      return config;
+    }
+
+    delete config['~extends~'];
+
+    config = { ...currentExtend, ...config };
+
+    return config;
+  }
+
+  const processValue = (value: string, currentKeyName: string, parent: KeyValueStore) => {
+    if (!value.startsWith("~")) return value;
+
+    if (value.startsWith("~ref~")) {
+      const referencePath = value.replace('~ref~', '').trim().split(".");
+      if (referencePath[0] === "") referencePath[0] = currentKeyName;
+      let currentValue: KeyValueStore | string = parent;
+
+      for (const referencedKey of referencePath) {
+        if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
+          console.warn(`Invalid reference: ${value}`);
+          currentValue = "";
+          break;
+        }
+        currentValue = currentValue[referencedKey];
+      }
+
+      return currentValue;
+    }
+
+    return value;
+  };
+
+  const parseConfig = (config: KeyValueStore, currentKeyName: string, parent: KeyValueStore): KeyValueStore => {
+    config = extendConfig(config, currentKeyName, parent);
 
     for (const key in config) {
       if (isObject(config[key])) {
-        config[key] = parseConfig(config[key] as KeyValueStore, currentKeyName, parent);
+        config[key] = parseConfig(config[key], currentKeyName, parent);
       }
 
-      if (typeof config[key] === "string" && config[key].startsWith("~ref~")) {
-        const referencePath = config[key].replace('~ref~', '').trim().split(".");
-        if (referencePath[0] === "")  referencePath[0] = currentKeyName;
-        let currentValue: KeyValueStore | string = parent;
-
-        for (const referencedKey of referencePath) {
-          if (!isObject(currentValue) || currentValue[referencedKey] === undefined) {
-            console.warn(`Invalid reference: ${config[key]}`);
-            currentValue = "";
-            break;
-          }
-          currentValue = currentValue[referencedKey];
-        }
-
-        config[key] = currentValue;
+      if (typeof config[key] === "string") {
+        config[key] = processValue(config[key], currentKeyName, parent);
       }
     }
 
