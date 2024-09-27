@@ -1,5 +1,7 @@
 import { expect, test } from "bun:test";
 import configLoader from "../../../../src/lib/config-loader.js";
+import logger from "../../../../src/lib/logger.js";
+logger.level = "silent";
 
 test("configLoader should load all the files in the config path", async () => {
   const configPath = "./tests/storage-mock";
