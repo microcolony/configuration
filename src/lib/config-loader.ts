@@ -80,6 +80,10 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
       return config;
     }
 
+    if (currentExtend['~extends~']) {
+      currentExtend = extendConfig(currentExtend, currentKeyName, parent);
+    }
+
     delete config['~extends~'];
 
     config = { ...currentExtend, ...config };
@@ -92,7 +96,7 @@ const configLoader = async (configPath: string): Promise<ConfigStore> => {
 
     if (value.startsWith("~ref~")) {
       const referencePath = value.replace('~ref~', '').trim().split(".");
-      if (referencePath[0] === "") referencePath[0] = currentKeyName;
+      referencePath[0] ||= currentKeyName;
       let currentValue: KeyValueStore | string = parent;
 
       for (const referencedKey of referencePath) {
