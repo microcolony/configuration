@@ -1,0 +1,3 @@
+const testInterval = setInterval(() => {
+  console.log("test");
+}, 1000);
